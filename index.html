@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💪 승주의 헬스 트래커</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff;--bg2:#f7f6f2;--bg3:#f0efe9;
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
+  --border:#e8e7e0;--border2:#d3d1c7;
+  --green-bg:#eaf3de;--green-text:#27500a;--green-mid:#639922;
+  --blue-bg:#e6f1fb;--blue-text:#0c447c;--blue-mid:#378add;
+  --amber-bg:#faeeda;--amber-text:#633806;
+  --teal-bg:#e1f5ee;--teal-text:#085041;--teal-mid:#1d9e75;
+  --radius-md:8px;--radius-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg2);color:var(--text);min-height:100vh;}
+
+.topbar{background:var(--text);padding:12px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;}
+.topbar-icon{font-size:26px;animation:throb 2s ease-in-out infinite;}
+@keyframes throb{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+.topbar-title{font-size:15px;font-weight:700;color:#fff;letter-spacing:-0.3px;}
+.topbar-sub{font-size:11px;color:#888780;margin-top:1px;}
+
+.container{max-width:720px;margin:0 auto;padding:20px 16px 60px;}
+
+.tabs{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.tab{padding:6px 16px;border-radius:20px;border:0.5px solid var(--border2);font-size:13px;cursor:pointer;background:transparent;color:var(--text2);font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+.tab:hover{background:var(--bg3);}
+.tab.on{background:var(--text);color:#fff;border-color:var(--text);}
+.sec{display:none;}.sec.on{display:block;}
+
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:12px;}
+.card-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1rem;}
+.stat{background:var(--bg2);border-radius:var(--radius-md);padding:14px 12px;text-align:center;}
+.stat-emoji{font-size:22px;margin-bottom:4px;}
+.stat-val{font-size:20px;font-weight:500;color:var(--text);}
+.stat-label{font-size:11px;color:var(--text3);margin-top:2px;}
+
+.prog-wrap{margin-bottom:10px;}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:5px;}
+.prog-track{height:7px;background:var(--bg2);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;transition:width 0.4s;}
+.green-fill{background:var(--green-mid);}.blue-fill{background:var(--blue-mid);}
+
+.checklist{display:flex;flex-direction:column;gap:6px;}
+.chk-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-md);border:0.5px solid var(--border);cursor:pointer;background:var(--bg);transition:background 0.1s;}
+.chk-row:hover{background:var(--bg2);}
+.chk-row.done{background:var(--bg2);}
+.chk-box{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;transition:all 0.15s;}
+.chk-row.done .chk-box{background:var(--green-mid);border-color:var(--green-mid);}
+.chk-text{font-size:13px;color:var(--text);flex:1;}
+.chk-row.done .chk-text{color:var(--text3);text-decoration:line-through;}
+.chk-tag{font-size:11px;padding:2px 7px;border-radius:8px;}
+.tag-workout{background:var(--green-bg);color:var(--green-text);}
+.tag-meal{background:var(--amber-bg);color:var(--amber-text);}
+
+.week-nav{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+.week-nav button{background:none;border:0.5px solid var(--border2);border-radius:var(--radius-md);padding:4px 10px;font-size:13px;cursor:pointer;color:var(--text);font-family:'Noto Sans KR',sans-serif;}
+.week-nav button:hover{background:var(--bg2);}
+.week-nav span{font-size:13px;font-weight:500;color:var(--text);flex:1;text-align:center;}
+.reset-btn{font-size:12px;color:var(--text3);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:var(--radius-md);font-family:'Noto Sans KR',sans-serif;}
+.reset-btn:hover{background:var(--bg2);}
+
+.day-cell-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
+.day-cell{font-size:11px;padding:8px 4px;border-radius:var(--radius-md);border:0.5px solid var(--border);}
+.day-cell .d-name{color:var(--text3);margin-bottom:4px;}
+.day-cell .d-emoji{font-size:16px;}
+
+.greeting{font-size:14px;color:var(--text2);margin-bottom:1rem;line-height:1.6;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;}
+
+.day-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
+.day-tab{padding:5px 12px;border-radius:20px;border:0.5px solid var(--border2);font-size:12px;cursor:pointer;background:transparent;color:var(--text2);font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+.day-tab:hover{background:var(--bg2);}
+.day-tab.on{background:var(--green-mid);color:#fff;border-color:var(--green-mid);}
+
+.meal-block{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;}
+.meal-header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:0.5px solid var(--border);background:var(--bg2);}
+.meal-time-badge{font-size:12px;font-weight:500;padding:3px 10px;border-radius:20px;background:var(--green-bg);color:var(--green-text);white-space:nowrap;}
+.meal-type-name{font-size:12px;color:var(--text3);}
+.meal-body{padding:10px 14px;}
+.meal-top{display:flex;align-items:center;gap:8px;}
+.meal-name{font-size:13px;color:var(--text);font-weight:500;flex:1;line-height:1.4;}
+.meal-prot{font-size:11px;padding:2px 7px;border-radius:8px;background:var(--green-bg);color:var(--green-text);white-space:nowrap;flex-shrink:0;}
+.meal-tired-btn{font-size:11px;padding:3px 9px;border-radius:8px;border:0.5px solid var(--border2);background:transparent;cursor:pointer;color:var(--text3);white-space:nowrap;flex-shrink:0;font-family:'Noto Sans KR',sans-serif;}
+.meal-tired-btn:hover{background:var(--bg2);}
+.alt-list{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);display:none;}
+.alt-list.open{display:block;}
+.alt-label{font-size:11px;color:#854f0b;margin-bottom:6px;}
+.alt-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border-radius:var(--radius-md);background:var(--bg2);margin-bottom:4px;}
+.alt-item:last-child{margin-bottom:0;}
+.alt-item.protein-pick{background:var(--teal-bg);}
+.alt-name{font-size:12px;color:var(--text);}
+.alt-prot{font-size:11px;padding:1px 6px;border-radius:6px;background:var(--amber-bg);color:var(--amber-text);white-space:nowrap;}
+.alt-prot.green{background:var(--green-bg);color:var(--green-text);}
+.meal-tip{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5;}
+.protein-badge{font-size:10px;padding:1px 6px;border-radius:6px;background:#9fe1cb;color:#085041;white-space:nowrap;flex-shrink:0;}
+
+.record-form{display:flex;flex-direction:column;gap:10px;}
+.field-row{display:flex;align-items:center;gap:10px;}
+.field-emoji{font-size:18px;width:28px;text-align:center;flex-shrink:0;}
+.field-label{font-size:13px;color:var(--text2);min-width:80px;}
+.field-row input{flex:1;padding:7px 10px;border:0.5px solid var(--border2);border-radius:var(--radius-md);font-size:13px;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;outline:none;}
+.field-row input:focus{border-color:var(--green-mid);}
+.save-btn{padding:10px;border:0.5px solid var(--border2);border-radius:var(--radius-md);font-size:13px;cursor:pointer;background:transparent;color:var(--text);width:100%;font-family:'Noto Sans KR',sans-serif;transition:background 0.15s;}
+.save-btn:hover{background:var(--bg2);}
+
+.history-table{width:100%;border-collapse:collapse;font-size:12px;}
+.history-table th{text-align:left;padding:6px 8px;color:var(--text3);font-weight:400;border-bottom:0.5px solid var(--border);font-size:11px;}
+.history-table td{padding:7px 8px;border-bottom:0.5px solid var(--border);color:var(--text);}
+.history-table tr:last-child td{border-bottom:none;}
+.empty-msg{font-size:13px;color:var(--text3);text-align:center;padding:2rem 0;line-height:2;}
+.save-msg{font-size:13px;color:var(--green-mid);text-align:center;display:none;padding:6px 0;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-icon">🏋️</div>
+  <div>
+    <div class="topbar-title">승주의 헬스 트래커</div>
+    <div class="topbar-sub">운동 · 식단 · 주간 기록</div>
+  </div>
+</div>
+
+<div class="container">
+<div class="tabs">
+  <button class="tab on" onclick="switchTab('home',this)">🏠 홈</button>
+  <button class="tab" onclick="switchTab('checklist',this)">🏋️ 운동 루틴</button>
+  <button class="tab" onclick="switchTab('menu',this)">🍳 식단</button>
+  <button class="tab" onclick="switchTab('record',this)">📝 주간 기록</button>
+  <button class="tab" onclick="switchTab('history',this)">📊 히스토리</button>
+</div>
+
+<div id="home" class="sec on">
+  <div class="greeting" id="greeting-msg"></div>
+  <div class="stat-grid">
+    <div class="stat"><div class="stat-emoji">⚖️</div><div class="stat-val" id="h-weight">—</div><div class="stat-label">현재 체중 (kg)</div></div>
+    <div class="stat"><div class="stat-emoji">🏋️</div><div class="stat-val" id="h-pullup">—</div><div class="stat-label">턱걸이 최대</div></div>
+    <div class="stat"><div class="stat-emoji">💪</div><div class="stat-val" id="h-pushup">—</div><div class="stat-label">푸쉬업 최대</div></div>
+    <div class="stat"><div class="stat-emoji">📅</div><div class="stat-val" id="h-week">1주차</div><div class="stat-label">진행 주차</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📈 이번 주 달성률</div>
+    <div class="prog-wrap">
+      <div class="prog-label"><span>🏋️ 운동</span><span id="ex-rate">0/5일</span></div>
+      <div class="prog-track"><div class="prog-fill green-fill" id="ex-bar" style="width:0%"></div></div>
+    </div>
+    <div class="prog-wrap" style="margin-bottom:0;">
+      <div class="prog-label"><span>🍳 식단 3끼</span><span id="meal-rate">0/7일</span></div>
+      <div class="prog-track"><div class="prog-fill blue-fill" id="meal-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🗓️ 이번 주 운동 일정</div>
+    <div class="day-cell-grid">
+      <div class="day-cell"><div class="d-name">월</div><div class="d-emoji">🔥</div></div>
+      <div class="day-cell"><div class="d-name">화</div><div class="d-emoji">🔥</div></div>
+      <div class="day-cell" style="background:var(--bg2);"><div class="d-name">수</div><div class="d-emoji">😴</div></div>
+      <div class="day-cell"><div class="d-name">목</div><div class="d-emoji">🔥</div></div>
+      <div class="day-cell"><div class="d-name">금</div><div class="d-emoji">🔥</div></div>
+      <div class="day-cell"><div class="d-name">토</div><div class="d-emoji">🔥</div></div>
+      <div class="day-cell" style="background:var(--bg2);"><div class="d-name">일</div><div class="d-emoji">😴</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="checklist" class="sec">
+  <div class="day-tabs" id="routine-tabs">
+    <button class="day-tab on" onclick="selectRoutine(0,this)">월</button>
+    <button class="day-tab" onclick="selectRoutine(1,this)">화</button>
+    <button class="day-tab" style="background:#f7f6f2;color:#aaa;border-color:#e8e7e0;cursor:default;">수</button>
+    <button class="day-tab" onclick="selectRoutine(3,this)">목</button>
+    <button class="day-tab" onclick="selectRoutine(4,this)">금</button>
+    <button class="day-tab" onclick="selectRoutine(5,this)">토</button>
+    <button class="day-tab" style="background:#f7f6f2;color:#aaa;border-color:#e8e7e0;cursor:default;">일</button>
+  </div>
+  <div id="routine-body"></div>
+</div>
+
+<div id="menu" class="sec">
+  <div class="day-tabs" id="day-tabs">
+    <button class="day-tab on" onclick="selectDay(0,this)">월</button>
+    <button class="day-tab" onclick="selectDay(1,this)">화</button>
+    <button class="day-tab" onclick="selectDay(2,this)">수</button>
+    <button class="day-tab" onclick="selectDay(3,this)">목</button>
+    <button class="day-tab" onclick="selectDay(4,this)">금</button>
+    <button class="day-tab" onclick="selectDay(5,this)">토</button>
+    <button class="day-tab" onclick="selectDay(6,this)">일</button>
+  </div>
+  <div id="menu-body"></div>
+</div>
+
+<div id="record" class="sec">
+  <div class="card">
+    <div class="card-title">📝 이번 주 수치 기록</div>
+    <div class="record-form">
+      <div class="field-row"><span class="field-emoji">⚖️</span><span class="field-label">체중 (kg)</span><input type="number" id="inp-weight" placeholder="예: 57.5" step="0.1"></div>
+      <div class="field-row"><span class="field-emoji">🏋️</span><span class="field-label">턱걸이 최대</span><input type="number" id="inp-pullup" placeholder="예: 1"></div>
+      <div class="field-row"><span class="field-emoji">💪</span><span class="field-label">푸쉬업 최대</span><input type="number" id="inp-pushup" placeholder="예: 15"></div>
+      <div class="field-row"><span class="field-emoji">💬</span><span class="field-label">한 줄 메모</span><input type="text" id="inp-memo" placeholder="이번 주 느낀 점"></div>
+      <button class="save-btn" onclick="saveRecord()">💾 저장하기</button>
+    </div>
+  </div>
+  <div class="save-msg" id="save-msg">🎉 저장됐어!</div>
+</div>
+
+<div id="history" class="sec">
+  <div class="card">
+    <div class="card-title">📊 주차별 기록</div>
+    <div id="history-body"></div>
+  </div>
+</div>
+</div>
+
+<script>
+var currentWeek=1,currentDay=0,data={},altOpen={};
+var PD={name:"🥤 랩노쉬 프로틴 드링크",prot:"22g",isProtein:true};
+  var LT={name:"🥤 랩노쉬 + 구운계란 2개 (가볍게)",prot:"34g",isLight:true};
+var MEALS=[
+  {day:'월',workout:'가슴+삼두 🔥',items:[
+    {type:'🌅 아침',time:'10:00',emoji:'🍳',name:'스크램블에그 3개 + 밥',prot:'18g',tip:'기상 후 30분 이내에 먹기',alts:[LT,{name:'계란후라이 2개 + 밥',prot:'12g'},{name:'계란볶음밥 (계란3개)',prot:'18g'},{name:'구운계란 3개 + 우유',prot:'24g'}]},
+    {type:'☀️ 간식',time:'10:30',emoji:'🫐',name:'그릭요거트 + 냉동블루베리',prot:'15g',tip:'아침 먹고 바로 이어서',alts:[PD,{name:'우유 한 잔 + 구운계란',prot:'18g'},{name:'삶은계란 2개',prot:'12g'}]},
+    {type:'🍱 점심',time:'13:00',emoji:'🥪',name:'샌드위치 or 햄버거 (외식)',prot:'15g',tip:'운동 1~2시간 전에 먹기',alts:[{name:'편의점 삼각김밥 2개+계란',prot:'15g'},{name:'돼지고기 백반',prot:'22g'}]},
+    {type:'🏋️ 운동',time:'16~19시 중 선택',emoji:'💪',name:'가슴+삼두 운동 (35분)',prot:'—',tip:'컨디션 좋은 시간대에 자유롭게!',alts:[]},
+    {type:'⚡ 운동 후',time:'운동 직후 30분 이내',emoji:'🥚',name:'계란 2개 + 우유 한 잔',prot:'18g',tip:'운동 끝나고 30분 이내 꼭!',alts:[PD,{name:'그릭요거트 + 계란 1개',prot:'18g'},{name:'구운계란 3개',prot:'18g'}]},
+    {type:'🌙 저녁',time:'운동 후 1시간 내외',emoji:'🍗',name:'냉동 닭가슴살 + 밥',prot:'30g',tip:'전자레인지 3분이면 끝',alts:[{name:'두부 간장구이 + 계란2개 + 밥',prot:'22g'},{name:'어묵+두부 조림 + 밥',prot:'20g'},{name:'냉동 갈비탕 + 밥',prot:'25g'}]},
+    {type:'🌌 취침 전',time:'23:00',emoji:'🥛',name:'우유 한 잔 + 블루베리',prot:'6g',tip:'자기 30분 전에 마시기',alts:[{name:'그릭요거트 + 블루베리',prot:'15g'},{name:'삶은계란 2개',prot:'12g'}]}
+  ]},
+  {day:'화',workout:'등+이두 🔥',items:[
+    {type:'🌅 아침',time:'10:00',emoji:'🍳',name:'계란후라이 2개 + 밥',prot:'12g',tip:'기상 후 30분 이내에 먹기',alts:[LT,{name:'스크램블에그 3개 + 밥',prot:'18g'},{name:'구운계란 3개 + 우유',prot:'24g'}]},
+    {type:'☀️ 간식',time:'10:30',emoji:'🫐',name:'그릭요거트 + 냉동블루베리',prot:'15g',tip:'수업 전 에너지 충전',alts:[PD,{name:'우유 + 구운계란',prot:'18g'}]},
+    {type:'🏫 수업',time:'11:50~14:30',emoji:'📚',name:'수업 시간',prot:'—',tip:'수업 전에 간식 꼭 챙기기',alts:[]},
+    {type:'🍱 점심',time:'15:00',emoji:'🥙',name:'편의점 삼각김밥+계란',prot:'15g',tip:'수업 끝나고 바로',alts:[{name:'샌드위치 외식',prot:'15g'},{name:'햄버거 외식',prot:'18g'}]},
+    {type:'🏋️ 운동',time:'16~19시 중 선택',emoji:'💪',name:'등+이두 운동 (35분)',prot:'—',tip:'피곤하면 저녁 먹고 7시에 해도 OK',alts:[]},
+    {type:'⚡ 운동 후',time:'운동 직후 30분 이내',emoji:'🥚',name:'계란 2개 + 우유 한 잔',prot:'18g',tip:'운동 끝나고 30분 이내 꼭!',alts:[PD,{name:'그릭요거트 + 계란 1개',prot:'18g'},{name:'구운계란 3개',prot:'18g'}]},
+    {type:'🌙 저녁',time:'운동 후 1시간 내외',emoji:'🍖',name:'냉동 갈비탕 + 밥',prot:'38g',tip:'사미헌 기준 실제 단백질 36~42g! 든든해',alts:[{name:'🍜 라면 + 계란2개 + 치즈1장',prot:'22g'},{name:'닭가슴살 + 밥',prot:'30g'},{name:'두부 간장구이 + 계란2개 + 밥',prot:'22g'}]},
+    {type:'🌌 취침 전',time:'23:00',emoji:'🥛',name:'우유 한 잔',prot:'6g',tip:'자기 30분 전',alts:[{name:'그릭요거트 + 블루베리',prot:'15g'}]}
+  ]},
+  {day:'수',workout:'휴식일 😴',items:[
+    {type:'🌅 아침',time:'10:00',emoji:'🍳',name:'계란볶음밥 (계란3개)',prot:'18g',tip:'휴식일이니 여유롭게',alts:[LT,{name:'스크램블에그 3개 + 밥',prot:'18g'},{name:'계란후라이 2개 + 밥',prot:'12g'}]},
+    {type:'☀️ 간식',time:'10:30',emoji:'🫐',name:'그릭요거트 + 냉동블루베리',prot:'15g',tip:'수업 전 에너지 충전',alts:[PD,{name:'우유 + 구운계란',prot:'18g'}]},
+    {type:'🍱 점심',time:'13:00',emoji:'🍱',name:'점심 외식 자유식',prot:'15g',tip:'수업 전 여유 있을 때',alts:[{name:'제육볶음 백반',prot:'25g'},{name:'돼지고기 구이 정식',prot:'28g'}]},
+    {type:'🏫 수업',time:'14:40~17:00',emoji:'📚',name:'수업 시간',prot:'—',tip:'수업 전에 점심 꼭 챙기기',alts:[]},
+    {type:'🌙 저녁',time:'17:30',emoji:'🥩',name:'우삼겹 200g + 밥',prot:'28g',tip:'주 1~2회 칼로리 보충용으로 딱!',alts:[{name:'냉동 닭가슴살 + 밥',prot:'30g'},{name:'냉동 갈비탕 + 밥',prot:'38g'},{name:'두부+어묵 조림 + 밥',prot:'20g'}]},
+    {type:'🌌 취침 전',time:'23:00',emoji:'🫐',name:'그릭요거트 + 냉동블루베리',prot:'15g',tip:'자기 30분 전',alts:[PD,{name:'우유 한 잔',prot:'6g'}]}
+  ]},
+  {day:'목',workout:'어깨+하체 🔥',items:[
+    {type:'🌅 아침',time:'08:00',emoji:'🥚',name:'계란 3개 + 우유 (빠른 아침)',prot:'24g',tip:'9시 수업 전 빠르게 챙기기',alts:[LT,{name:'구운계란 3개 + 우유',prot:'24g'},{name:'스크램블에그 3개',prot:'18g'}]},
+    {type:'🏫 수업',time:'09:00~11:00',emoji:'📚',name:'수업 시간',prot:'—',tip:'전날 밤 계란 삶아두면 편해',alts:[]},
+    {type:'☀️ 간식',time:'11:30',emoji:'🫐',name:'그릭요거트 + 냉동블루베리',prot:'15g',tip:'수업 끝나고 바로',alts:[PD,{name:'구운계란 2개 + 우유',prot:'18g'}]},
+    {type:'🍱 점심',time:'12:30',emoji:'🥪',name:'점심 외식',prot:'15g',tip:'운동 1~2시간 전에 먹기',alts:[{name:'햄버거',prot:'18g'},{name:'제육볶음 백반',prot:'25g'}]},
+    {type:'🏋️ 운동',time:'16~19시 중 선택',emoji:'💪',name:'어깨+하체 운동 (35분)',prot:'—',tip:'컨디션 좋은 시간대에 자유롭게!',alts:[]},
+    {type:'⚡ 운동 후',time:'운동 직후 30분 이내',emoji:'🥚',name:'계란 2개 + 우유 한 잔',prot:'18g',tip:'운동 끝나고 30분 이내 꼭!',alts:[PD,{name:'그릭요거트 + 계란 1개',prot:'18g'},{name:'구운계란 3개',prot:'18g'}]},
+    {type:'🌙 저녁',time:'운동 후 1시간 내외',emoji:'🍖',name:'냉동 갈비탕 + 밥',prot:'25g',tip:'전자레인지 5분이면 완성',alts:[{name:'닭가슴살 + 밥',prot:'30g'},{name:'두부 간장구이 + 계란2개',prot:'22g'}]},
+    {type:'🌌 취침 전',time:'23:00',emoji:'🥛',name:'우유 한 잔',prot:'6g',tip:'자기 30분 전',alts:[{name:'그릭요거트 + 블루베리',prot:'15g'}]}
+  ]},
+  {day:'금',workout:'가슴+삼두 🔥',items:[
+    {type:'🌅 아침',time:'08:00',emoji:'🥚',name:'계란 3개 + 우유 (빠른 아침)',prot:'24g',tip:'9시 수업 전 빠르게 챙기기',alts:[LT,{name:'구운계란 3개 + 우유',prot:'24g'}]},
+    {type:'🏫 수업',time:'09:00~11:00',emoji:'📚',name:'수업 시간',prot:'—',tip:'전날 밤 계란 삶아두면 편해',alts:[]},
+    {type:'🍱 점심',time:'11:30~12:00',emoji:'🍔',name:'햄버거 or 샌드위치 외식',prot:'15g',tip:'수업 끝나고 든든하게',alts:[{name:'편의점 닭가슴살 도시락',prot:'25g'},{name:'닭강정 도시락',prot:'22g'}]},
+    {type:'🏋️ 운동',time:'16~19시 중 선택',emoji:'💪',name:'가슴+삼두 운동 (35분)',prot:'—',tip:'피곤하면 저녁 먹고 7시에 해도 OK',alts:[]},
+    {type:'⚡ 운동 후',time:'운동 직후 30분 이내',emoji:'🥚',name:'계란 2개 + 우유 한 잔',prot:'18g',tip:'운동 끝나고 30분 이내 꼭!',alts:[PD,{name:'그릭요거트 + 계란 1개',prot:'18g'},{name:'구운계란 3개',prot:'18g'}]},
+    {type:'🌙 저녁',time:'운동 후 1시간 내외',emoji:'🥩',name:'대패삼겹살 150~200g + 밥 + 계란노른자 + 진간장',prot:'30g',tip:'노른자+간장 소스에 찍어먹으면 꿀맛!',alts:[{name:'냉동 닭가슴살 + 밥',prot:'30g'},{name:'냉동 갈비탕 + 밥',prot:'38g'},{name:'어묵+두부 조림 + 밥',prot:'20g'}]},
+    {type:'🌌 취침 전',time:'23:00',emoji:'🫐',name:'그릭요거트 + 냉동블루베리',prot:'15g',tip:'자기 30분 전',alts:[PD,{name:'우유 한 잔',prot:'6g'}]}
+  ]},
+  {day:'토',workout:'등+이두 🔥',items:[
+    {type:'🌅 아침',time:'10:00',emoji:'🍳',name:'스크램블에그 3개 + 밥',prot:'18g',tip:'기상 후 30분 이내에 먹기',alts:[LT,{name:'계란볶음밥 (계란3개)',prot:'18g'},{name:'계란후라이 2개 + 우유',prot:'18g'}]},
+    {type:'☀️ 간식',time:'10:30',emoji:'🫐',name:'그릭요거트 + 냉동블루베리',prot:'15g',tip:'운동 전 에너지 준비',alts:[PD,{name:'우유 + 구운계란',prot:'18g'}]},
+    {type:'🏋️ 운동',time:'오전 11시',emoji:'💪',name:'등+이두 운동 (35분)',prot:'—',tip:'주말 오전에 일찍 끝내버리자!',alts:[]},
+    {type:'⚡ 운동 후',time:'11:40',emoji:'🥚',name:'계란 2개 + 우유 한 잔',prot:'18g',tip:'운동 끝나고 30분 이내 꼭!',alts:[PD,{name:'그릭요거트 + 계란 1개',prot:'18g'},{name:'구운계란 3개',prot:'18g'}]},
+    {type:'🍱 점심',time:'14:00',emoji:'🍱',name:'점심 외식 or 배달 자유식',prot:'20g',tip:'오늘은 먹고 싶은 거 먹어도 OK',alts:[{name:'닭볶음탕 + 밥',prot:'28g'},{name:'삼겹살 구이',prot:'30g'}]},
+    {type:'🌙 저녁',time:'19:00',emoji:'🍗',name:'냉동 닭가슴살 + 밥',prot:'30g',tip:'저녁은 단백질 집중',alts:[{name:'두부 간장구이 + 계란2개',prot:'22g'},{name:'냉동 갈비탕 + 밥',prot:'25g'}]},
+    {type:'🌌 취침 전',time:'23:00',emoji:'🥛',name:'우유 한 잔',prot:'6g',tip:'자기 30분 전',alts:[PD,{name:'그릭요거트 + 블루베리',prot:'15g'}]}
+  ]},
+  {day:'일',workout:'휴식일 😴',items:[
+    {type:'🌅 아침',time:'10:00',emoji:'🍳',name:'계란볶음밥 + 우유',prot:'24g',tip:'여유로운 주말 아침',alts:[LT,{name:'스크램블에그 3개 + 밥',prot:'18g'},{name:'계란후라이 2개 + 밥',prot:'12g'}]},
+    {type:'☀️ 간식',time:'10:30',emoji:'🫐',name:'그릭요거트 + 냉동블루베리',prot:'15g',tip:'느긋하게',alts:[PD,{name:'우유 + 구운계란',prot:'18g'}]},
+    {type:'🍱 점심',time:'13:30',emoji:'🍽️',name:'점심 자유식 (고기류 추천)',prot:'25g',tip:'일주일 수고했으니 맛있는 거!',alts:[{name:'삼겹살 외식',prot:'30g'},{name:'닭갈비',prot:'28g'}]},
+    {type:'🌙 저녁',time:'18:30',emoji:'🍱',name:'저녁 자유식',prot:'25g',tip:'내일 월요일 시작 전 든든하게',alts:[{name:'닭가슴살 + 밥',prot:'30g'},{name:'계란볶음밥 + 구운계란',prot:'22g'}]},
+    {type:'🌌 취침 전',time:'23:00',emoji:'🥛',name:'우유 + 블루베리',prot:'21g',tip:'자기 30분 전',alts:[PD,{name:'그릭요거트 + 블루베리',prot:'15g'}]}
+  ]}
+];
+
+var ROUTINES=[
+  {day:'월',label:'가슴 + 삼두',tag:'밀기 💪',time:'16~19시 중 선택',sets:[
+    {name:'워밍업 스트레칭',set:'—',rep:'5분',tip:'어깨/가슴 위주로 풀어주기'},
+    {name:'푸쉬업',set:'3세트',rep:'최대 반복',tip:'코어 고정, 몸 일직선 유지'},
+    {name:'덤벨 체스트프레스',set:'3세트',rep:'12회',tip:'누워서 5kg 양손, 가슴에 집중'},
+    {name:'덤벨 플라이',set:'3세트',rep:'12회',tip:'가슴 찢어지는 느낌으로 천천히'},
+    {name:'딥스 (의자)',set:'3세트',rep:'최대 반복',tip:'팔꿈치 뒤로 빠지게, 상체 약간 앞으로'},
+    {name:'마무리 스트레칭',set:'—',rep:'5분',tip:'가슴 스트레칭 필수'}
+  ]},
+  {day:'화',label:'등 + 이두',tag:'당기기 🔙',time:'16~19시 중 선택',sets:[
+    {name:'워밍업 스트레칭',set:'—',rep:'5분',tip:'등/어깨 위주로 풀어주기'},
+    {name:'턱걸이',set:'3세트',rep:'최대 반복',tip:'1개씩도 OK — 쉬고 또 1개 반복'},
+    {name:'인버티드 로우',set:'3세트',rep:'12회',tip:'테이블 아래서 당기기, 등 쥐어짜는 느낌'},
+    {name:'덤벨 컬',set:'3세트',rep:'12회',tip:'팔꿈치 고정, 반동 금지'},
+    {name:'해머 컬',set:'3세트',rep:'12회',tip:'팔뚝 두께 핵심 운동'},
+    {name:'마무리 스트레칭',set:'—',rep:'5분',tip:'이두/광배근 스트레칭'}
+  ]},
+  null,
+  {day:'목',label:'어깨 + 하체',tag:'어깨 🏔️',time:'16~19시 중 선택',sets:[
+    {name:'워밍업 스트레칭',set:'—',rep:'5분',tip:'어깨 회전 위주로 풀어주기'},
+    {name:'덤벨 숄더프레스',set:'3세트',rep:'12회',tip:'어깨 넓어지는 핵심 운동'},
+    {name:'레터럴 레이즈',set:'3세트',rep:'15회',tip:'천천히, 반동 절대 금지'},
+    {name:'맨몸 스쿼트',set:'3세트',rep:'20회',tip:'허벅지 평행까지 내려가기'},
+    {name:'런지',set:'3세트',rep:'12회 (각)',tip:'덤벨 들고 해도 OK'},
+    {name:'마무리 스트레칭',set:'—',rep:'5분',tip:'허벅지/어깨 스트레칭'}
+  ]},
+  {day:'금',label:'가슴 + 삼두',tag:'밀기 💪',time:'16~19시 중 선택',sets:[
+    {name:'워밍업 스트레칭',set:'—',rep:'5분',tip:'어깨/가슴 위주로 풀어주기'},
+    {name:'푸쉬업',set:'3세트',rep:'최대 반복',tip:'월요일보다 1개라도 더!'},
+    {name:'덤벨 체스트프레스',set:'3세트',rep:'12회',tip:'누워서 5kg 양손'},
+    {name:'덤벨 플라이',set:'3세트',rep:'12회',tip:'가슴 찢어지는 느낌으로'},
+    {name:'딥스 (의자)',set:'3세트',rep:'최대 반복',tip:'팔꿈치 뒤로 빠지게'},
+    {name:'마무리 스트레칭',set:'—',rep:'5분',tip:'가슴 스트레칭 필수'}
+  ]},
+  {day:'토',label:'등 + 이두',tag:'당기기 🔙',time:'오전 11시',sets:[
+    {name:'워밍업 스트레칭',set:'—',rep:'5분',tip:'등/어깨 위주로 풀어주기'},
+    {name:'턱걸이',set:'3세트',rep:'최대 반복',tip:'화요일보다 1개라도 더!'},
+    {name:'인버티드 로우',set:'3세트',rep:'12회',tip:'테이블 아래서 당기기'},
+    {name:'덤벨 컬',set:'3세트',rep:'12회',tip:'팔꿈치 고정, 반동 금지'},
+    {name:'해머 컬',set:'3세트',rep:'12회',tip:'팔뚝 두께 핵심'},
+    {name:'마무리 스트레칭',set:'—',rep:'5분',tip:'이두/광배근 스트레칭'}
+  ]},
+  null
+];
+
+function renderRoutine(di){
+  var r=ROUTINES[di];
+  if(!r){document.getElementById('routine-body').innerHTML='<div class="card"><div style="text-align:center;padding:2rem;color:#888780;font-size:14px;">😴 오늘은 휴식일이야!<br><span style="font-size:12px;margin-top:6px;display:block;">몸이 쉬어야 근육이 자라 💪</span></div></div>';return;}
+  var html='<div class="card">';
+  html+='<div class="card-title">'+r.day+'요일 — '+r.label+' &nbsp;<span style="font-size:11px;padding:2px 8px;border-radius:8px;background:#eaf3de;color:#27500a;">'+r.tag+'</span></div>';
+  html+='<div style="font-size:12px;color:#888780;margin-bottom:12px;">⏰ 운동 시간: '+r.time+' &nbsp;·&nbsp; 총 35~40분</div>';
+  html+='<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html+='<tr style="border-bottom:0.5px solid #e8e7e0;"><th style="text-align:left;padding:6px 8px;color:#888780;font-weight:400;font-size:11px;">운동</th><th style="text-align:center;padding:6px 8px;color:#888780;font-weight:400;font-size:11px;">세트</th><th style="text-align:center;padding:6px 8px;color:#888780;font-weight:400;font-size:11px;">횟수</th><th style="text-align:left;padding:6px 8px;color:#888780;font-weight:400;font-size:11px;">팁</th></tr>';
+  r.sets.forEach(function(s){
+    var isWarm=(s.set==='—');
+    var bg=isWarm?'background:#f7f6f2;':'';
+    html+='<tr style="border-bottom:0.5px solid #f0efe9;'+bg+'">';
+    html+='<td style="padding:8px 8px;font-weight:500;color:#1a1a18;">'+s.name+'</td>';
+    html+='<td style="padding:8px 8px;text-align:center;color:#5f5e5a;">'+s.set+'</td>';
+    html+='<td style="padding:8px 8px;text-align:center;"><span style="background:#eaf3de;color:#27500a;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:700;">'+s.rep+'</span></td>';
+    html+='<td style="padding:8px 8px;color:#888780;font-size:11px;">💡 '+s.tip+'</td>';
+    html+='</tr>';
+  });
+  html+='</table>';
+  html+='<div style="margin-top:12px;padding:10px 12px;background:#f7f6f2;border-radius:8px;font-size:11px;color:#888780;line-height:1.6;">세트 사이 휴식 <b style="color:#1a1a18;">60~90초</b> &nbsp;·&nbsp; 공복 운동 금지 &nbsp;·&nbsp; 운동 후 30분 이내 단백질 필수 💪</div>';
+  html+='</div>';
+  document.getElementById('routine-body').innerHTML=html;
+}
+
+function selectRoutine(idx,btn){
+  document.querySelectorAll('#routine-tabs .day-tab').forEach(function(t,i){
+    if(i!==2&&i!==6) t.classList.remove('on');
+  });
+  if(btn) btn.classList.add('on');
+  renderRoutine(idx);
+}
+
+function renderMenu(dayIdx){
+  var d=MEALS[dayIdx];
+  var tp=0;
+  d.items.forEach(function(m){if(m.prot&&m.prot!=='—'){var n=parseInt(m.prot);if(!isNaN(n))tp+=n;}});
+  var html='<div class="card"><div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'+
+    '<span>'+d.day+'요일 식단 &nbsp;<span style="font-size:12px;color:#888780;font-weight:400;">'+d.workout+'</span></span>'+
+    '<span style="font-size:12px;padding:3px 10px;border-radius:20px;background:#eaf3de;color:#27500a;font-weight:700;">🥩 총 단백질 약 '+tp+'g</span>'+
+    '</div>';
+  d.items.forEach(function(m,i){
+    var ok=altOpen[dayIdx+'_'+i];
+    html+='<div class="meal-block"><div class="meal-header"><span class="meal-time-badge">⏰ '+m.time+'</span><span class="meal-type-name">'+m.type+'</span></div>';
+    html+='<div class="meal-body"><div class="meal-top"><span class="meal-name">'+m.emoji+' '+m.name+'</span>';
+    if(m.prot!=='—') html+='<span class="meal-prot">단백질 '+m.prot+'</span>';
+    if(m.alts.length>0) html+='<button class="meal-tired-btn" onclick="toggleAlt(\''+dayIdx+'_'+i+'\')">😫 질렸어요</button>';
+    html+='</div>';
+    if(m.tip) html+='<div class="meal-tip">💡 '+m.tip+'</div>';
+    if(m.alts.length>0){
+      html+='<div class="alt-list'+(ok?' open':'')+'" id="alt-'+dayIdx+'_'+i+'"><div class="alt-label">이런 거 먹어도 돼!</div>';
+      m.alts.forEach(function(a){
+        html+='<div class="alt-item'+(a.isProtein?' protein-pick':'')+'"><span class="alt-name">'+a.name+'</span><div style="display:flex;gap:5px;align-items:center;">';
+        if(a.isProtein) html+='<span class="protein-badge">추천 ⭐</span>';
+        html+='<span class="alt-prot'+(a.isProtein?' green':'')+'">단백질 '+a.prot+'</span></div></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  });
+  html+='</div>';
+  document.getElementById('menu-body').innerHTML=html;
+}
+function toggleAlt(k){altOpen[k]=!altOpen[k];var el=document.getElementById('alt-'+k);if(el)el.classList.toggle('open',altOpen[k]);}
+function selectDay(idx,btn){currentDay=idx;document.querySelectorAll('.day-tab').forEach(function(t){t.classList.remove('on');});btn.classList.add('on');renderMenu(idx);}
+function loadData(){try{data=JSON.parse(localStorage.getItem('ht_gh2')||'{}');}catch(e){data={};}}
+function saveData(){try{localStorage.setItem('ht_gh2',JSON.stringify(data));}catch(e){}}
+function setGreeting(){var h=new Date().getHours();var msg=h<12?'좋은 아침이야 ☀️<br>오늘도 3끼 챙겨먹는 거 잊지 마!':h<17?'오후도 파이팅 💪<br>오늘 운동 일정 확인해봐!':h<21?'수고했어 🌙<br>저녁 단백질 꼭 챙겨!':'늦은 밤이네 🌌<br>자기 전 우유 한 잔 마셔!';document.getElementById('greeting-msg').innerHTML=msg;}
+function toggle(el,type,idx){loadData();var key='w'+currentWeek+'_'+type+idx;data[key]=!data[key];saveData();renderChecklist();updateHome();}
+function renderChecklist(){
+  loadData();var ex=0,ml=0;
+  document.querySelectorAll('#ex-list .chk-row').forEach(function(r,i){var k='w'+currentWeek+'_ex'+i;if(data[k]){r.classList.add('done');ex++;}else r.classList.remove('done');});
+  document.querySelectorAll('#meal-list .chk-row').forEach(function(r,i){var k='w'+currentWeek+'_meal'+i;if(data[k]){r.classList.add('done');ml++;}else r.classList.remove('done');});
+  document.getElementById('ex-rate').textContent=ex+'/5일';document.getElementById('meal-rate').textContent=ml+'/7일';
+  document.getElementById('ex-bar').style.width=Math.round(ex/5*100)+'%';document.getElementById('meal-bar').style.width=Math.round(ml/7*100)+'%';
+}
+function updateHome(){
+  loadData();var latest=null;for(var w=currentWeek;w>=1;w--){if(data['w'+w+'_weight']){latest=w;break;}}
+  if(latest){document.getElementById('h-weight').textContent=data['w'+latest+'_weight'];document.getElementById('h-pullup').textContent=data['w'+latest+'_pullup']||'—';document.getElementById('h-pushup').textContent=data['w'+latest+'_pushup']||'—';}
+  document.getElementById('h-week').textContent=currentWeek+'주차';
+  var ex=0,ml=0;for(var i=0;i<5;i++){if(data['w'+currentWeek+'_ex'+i])ex++;}for(var j=0;j<7;j++){if(data['w'+currentWeek+'_meal'+j])ml++;}
+  document.getElementById('ex-rate').textContent=ex+'/5일';document.getElementById('meal-rate').textContent=ml+'/7일';
+  document.getElementById('ex-bar').style.width=Math.round(ex/5*100)+'%';document.getElementById('meal-bar').style.width=Math.round(ml/7*100)+'%';
+}
+function changeWeek(dir){currentWeek=Math.max(1,currentWeek+dir);document.getElementById('wk-label').textContent=currentWeek+'주차';renderChecklist();updateHome();}
+function resetWeek(){loadData();for(var i=0;i<5;i++)delete data['w'+currentWeek+'_ex'+i];for(var j=0;j<7;j++)delete data['w'+currentWeek+'_meal'+j];saveData();renderChecklist();updateHome();}
+function saveRecord(){
+  loadData();var w=document.getElementById('inp-weight').value,pu=document.getElementById('inp-pullup').value,pp=document.getElementById('inp-pushup').value,memo=document.getElementById('inp-memo').value;
+  if(w)data['w'+currentWeek+'_weight']=w;if(pu)data['w'+currentWeek+'_pullup']=pu;if(pp)data['w'+currentWeek+'_pushup']=pp;if(memo)data['w'+currentWeek+'_memo']=memo;
+  saveData();updateHome();renderHistory();var msg=document.getElementById('save-msg');msg.style.display='block';setTimeout(function(){msg.style.display='none';},2000);
+}
+function renderHistory(){
+  loadData();var rows=[];for(var w=1;w<=30;w++){if(data['w'+w+'_weight']||data['w'+w+'_pullup'])rows.push(w);}
+  var el=document.getElementById('history-body');
+  if(!rows.length){el.innerHTML='<div class="empty-msg">아직 기록이 없어 🥲<br>주간 기록 탭에서 저장해봐!</div>';return;}
+  var html='<table class="history-table"><tr><th>주차</th><th>⚖️ 체중</th><th>🏋️ 턱걸이</th><th>💪 푸쉬업</th><th>💬 메모</th></tr>';
+  rows.forEach(function(w){html+='<tr><td>'+w+'주차</td><td>'+(data['w'+w+'_weight']||'—')+'kg</td><td>'+(data['w'+w+'_pullup']||'—')+'개</td><td>'+(data['w'+w+'_pushup']||'—')+'개</td><td style="color:var(--text3);font-size:11px;">'+(data['w'+w+'_memo']||'')+'</td></tr>';});
+  html+='</table>';el.innerHTML=html;
+}
+function switchTab(id,btn){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.getElementById(id).classList.add('on');btn.classList.add('on');if(id==='history')renderHistory();if(id==='menu')renderMenu(currentDay);if(id==='checklist'){var today2=new Date().getDay(),dm2={1:0,2:1,3:2,4:3,5:4,6:5,0:6};var rd=dm2[today2]!==undefined?dm2[today2]:0;renderRoutine(rd);}
+}
+loadData();setGreeting();renderChecklist();updateHome();
+var today=new Date().getDay(),dayMap={1:0,2:1,3:2,4:3,5:4,6:5,0:6};
+if(dayMap[today]!==undefined){currentDay=dayMap[today];document.querySelectorAll('.day-tab').forEach(function(t,i){t.classList.toggle('on',i===currentDay);});}
+</script>
+</body>
+</html>
